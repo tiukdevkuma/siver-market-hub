@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useCartB2B } from '@/hooks/useCartB2B';
+import { SellerLayout } from '@/components/seller/SellerLayout';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import SearchFilterB2B from '@/components/b2b/SearchFilterB2B';
@@ -147,19 +148,20 @@ const SellerAcquisicionLotes = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Encabezado */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Catálogo de Adquisición B2B
-          </h1>
-          <p className="text-gray-600">
-            Bienvenido, {user?.name}. Busca y selecciona productos al por mayor.
-          </p>
-        </div>
+    <SellerLayout>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-8">
+          {/* Encabezado */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Catálogo de Adquisición B2B
+            </h1>
+            <p className="text-gray-600">
+              Bienvenido, {user?.name}. Busca y selecciona productos al por mayor.
+            </p>
+          </div>
 
         {/* Filtros */}
         <SearchFilterB2B
@@ -192,7 +194,7 @@ const SellerAcquisicionLotes = () => {
             </div>
           )}
         </div>
-      </main>
+        </main>
 
       {/* Carrito Flotante */}
       <CartSidebarB2B
@@ -204,7 +206,8 @@ const SellerAcquisicionLotes = () => {
       />
 
       <Footer />
-    </div>
+      </div>
+    </SellerLayout>
   );
 };
 
