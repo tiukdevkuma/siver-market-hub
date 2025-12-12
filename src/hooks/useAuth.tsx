@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const navigate = useNavigate();
 
   const getUserRole = async (userId: string): Promise<UserRole> => {
@@ -102,16 +103,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setRole(userRole);
             setIsLoading(false);
 
-            // Solo redirigir si es un nuevo login (evento SIGNED_IN)
-            // pero NO redirigir en la página de inicio ("/")
+            // Solo redirigir si es un nuevo login desde una página PROTEGIDA
+            // NO redirigir si estamos en páginas públicas
             if (event === 'SIGNED_IN') {
               const currentPath = window.location.pathname;
-              // No redirigir si ya estamos en una ruta pública como la homepage
-              if (currentPath === '/' || currentPath === '/marketplace') {
-                // Permitir que se quede en la página pública
+              
+              // Páginas públicas donde NO queremos redirigir
+              const publicPages = ['/', '/marketplace', '/tienda/', '/producto/'];
+              const isPublicPage = publicPages.some(page => currentPath.startsWith(page));
+              
+              if (isPublicPage) {
+                // Usuario se logueó en una página pública, lo dejamos donde está
                 return;
               }
               
+              // Si está en una página protegida o de login, redirigir según rol
               if (userRole === UserRole.SELLER) {
                 navigate('/seller/adquisicion-lotes');
               } else if (userRole === UserRole.ADMIN) {
@@ -146,10 +152,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setIsLoading(false);
       }
+      
+      // Marcar como inicializado después de cargar la sesión
+      setHasInitialized(true);
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, hasInitialized]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
