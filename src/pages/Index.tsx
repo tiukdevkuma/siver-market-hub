@@ -95,7 +95,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main>
+      <main className="pt-32">
         <HeroSection />
         {/* Categories grid from database */}
         <CategoryGrid />
