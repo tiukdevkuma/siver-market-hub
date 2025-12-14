@@ -46,7 +46,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return UserRole.CLIENT;
       }
 
-      return (data?.role as UserRole) || UserRole.CLIENT;
+      // Mapeo de roles de la BD a roles de la app
+      const dbRole = data?.role as string;
+      if (dbRole === 'admin') return UserRole.ADMIN;
+      if (dbRole === 'seller') return UserRole.SELLER;
+      // 'user' en BD = 'client' en app
+      return UserRole.CLIENT;
     } catch (error) {
       console.error('Error checking user role:', error);
       return UserRole.CLIENT;
