@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { usePublicCategories, Category } from "@/hooks/useCategories";
-import CategoryCard from "@/components/landing/CategoryCard";
+import { useAuth } from "@/hooks/useAuth";
+import { UserRole } from "@/types/auth";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,6 +15,7 @@ const Header = () => {
 
   const { data: categories = [], isLoading: categoriesLoading } = usePublicCategories();
   const navigate = useNavigate();
+  const { role } = useAuth();
 
   const catBarRef = useRef(null);
   const [hasOverflow, setHasOverflow] = useState(false);
@@ -50,6 +52,8 @@ const Header = () => {
 
   const getSubcategories = (parentId) =>
     categories.filter((c) => c.parent_id === parentId);
+
+  const accountLink = role === UserRole.SELLER ? "/seller/cuenta" : "/cuenta";
 
   return (
     <>
@@ -101,7 +105,7 @@ const Header = () => {
           <div className="hidden md:flex items-center gap-6">
             <Link to="/favoritos" className="flex flex-col items-center gap-1 text-gray-700 hover:text-red-500 transition">
               <Heart className="w-6 h-6" />
-              <span className="text-xs">Favoritos</span>
+              <span c{accountLink}"text-xs">Favoritos</span>
             </Link>
             <Link to="/cuenta" className="flex flex-col items-center gap-1 text-gray-700 hover:text-red-500 transition">
               <User className="w-6 h-6" />
@@ -208,7 +212,7 @@ const Header = () => {
               <div className="flex items-center justify-around py-4 border-b border-gray-100">
                 <Link to="/favoritos" className="flex flex-col items-center gap-1 text-gray-700" onClick={() => setIsMenuOpen(false)}>
                   <Heart className="w-6 h-6" />
-                  <span className="text-xs">Favoritos</span>
+                  <span c{accountLink}"text-xs">Favoritos</span>
                 </Link>
                 <Link to="/cuenta" className="flex flex-col items-center gap-1 text-gray-700" onClick={() => setIsMenuOpen(false)}>
                   <User className="w-6 h-6" />
