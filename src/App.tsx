@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { UserRole } from "@/types/auth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -37,14 +37,23 @@ import SellerAcquisicionLotes from "./pages/seller/SellerAcquisicionLotes";
 import SellerCheckout from "./pages/seller/SellerCheckout";
 import SellerCatalogo from "./pages/seller/SellerCatalogo";
 import SellerAccountPage from "./pages/seller/SellerAccountPage";
+import SellerProfilePage from "./pages/seller/SellerProfilePage";
 import SellerCartPage from "./pages/seller/SellerCartPage";
 import SellerFavoritesPage from "./pages/seller/SellerFavoritesPage";
+import { PageLoader } from "./components/ui/PageLoader";
+import { NavigationLoader } from "./components/ui/NavigationLoader";
 
 const AppContent = () => {
   const { toasts, removeToast } = useToast();
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <>
+      <NavigationLoader />
       <ToastContainer toasts={toasts} onRemove={removeToast} />
       <Toaster />
       <Sonner />
@@ -136,13 +145,21 @@ const AppContent = () => {
                 </ProtectedRoute>
               } 
             />
-            <Route 
-              path="/seller/cuenta" 
+            <Route
+              path="/seller/cuenta"
               element={
                 <ProtectedRoute requiredRoles={[UserRole.SELLER, UserRole.ADMIN]}>
                   <SellerAccountPage />
                 </ProtectedRoute>
-              } 
+              }
+            />
+            <Route
+              path="/seller/profile"
+              element={
+                <ProtectedRoute requiredRoles={[UserRole.SELLER, UserRole.ADMIN]}>
+                  <SellerProfilePage />
+                </ProtectedRoute>
+              }
             />
             <Route 
               path="/seller/carrito" 

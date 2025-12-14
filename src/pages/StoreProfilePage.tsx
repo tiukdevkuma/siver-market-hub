@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
+import { useStore, useStoreProducts } from "@/hooks/useStore";
 import {
   Star,
   MessageCircle,
@@ -16,158 +17,34 @@ import {
   ShoppingBag,
   TrendingUp,
   CheckCircle,
-  ChevronRight,
   Search,
 } from "lucide-react";
-
-interface StoreProfile {
-  id: string;
-  name: string;
-  logo: string;
-  banner: string;
-  rating: number;
-  reviews: number;
-  followers: number;
-  products: number;
-  joinDate: string;
-  location: string;
-  responseTime: string;
-  description: string;
-  categories: string[];
-  badges: string[];
-}
-
-interface Product {
-  id: string;
-  sku: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  sales: number;
-  category: string;
-  discount?: number;
-}
 
 const StoreProfilePage = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { role } = useAuth();
-  const [store, setStore] = useState<StoreProfile | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch real store data
+  const { data: storeData, isLoading: isStoreLoading } = useStore(storeId);
+  const { data: productsData, isLoading: isProductsLoading } = useStoreProducts(storeId);
+  
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Derived state
+  const isLoading = isStoreLoading || isProductsLoading;
+
   useEffect(() => {
-    // Mock data - En producción, esto vendría de Supabase
-    const mockStore: StoreProfile = {
-      id: "seller1",
-      name: "Fashion World Store",
-      logo: "https://images.unsplash.com/photo-1552820728-8ac41f1ce891?w=100&h=100&fit=crop",
-      banner: "https://images.unsplash.com/photo-1542682353-bf4f5216dcab?w=1200&h=300&fit=crop",
-      rating: 4.7,
-      reviews: 2543,
-      followers: 125643,
-      products: 1254,
-      joinDate: "Enero 2020",
-      location: "Colombia",
-      responseTime: "1-2 horas",
-      description:
-        "Tienda especializada en moda femenina de alta calidad. Ropa casual, formal y deportiva para todas las edades. Envíos rápidos y garantía de satisfacción.",
-      categories: ["Ropa Mujer", "Vestidos", "Tops", "Accesorios", "Zapatos"],
-      badges: ["Top Seller", "Envío Gratis", "Respuesta Rápida"],
-    };
+    if (storeData) {
+        console.log("Store loaded:", storeData);
+    }
+    if (productsData) {
+        console.log("Products loaded:", productsData);
+    }
+  }, [storeData, productsData]);
 
-    const mockProducts: Product[] = [
-      {
-        id: "1",
-        sku: "DRESS-001",
-        name: "Vestido Casual Floral Elegante",
-        price: 34.99,
-        originalPrice: 59.99,
-        image: "https://images.unsplash.com/photo-1595777707802-a89fbc6ce338?w=400&h=500&fit=crop",
-        rating: 4.5,
-        reviews: 234,
-        sales: 1250,
-        category: "Vestidos",
-        discount: 42,
-      },
-      {
-        id: "2",
-        sku: "TOP-002",
-        name: "Top Básico de Algodón Premium",
-        price: 15.99,
-        originalPrice: 29.99,
-        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=500&fit=crop",
-        rating: 4.8,
-        reviews: 567,
-        sales: 3200,
-        category: "Tops",
-      },
-      {
-        id: "3",
-        sku: "BLOUSE-003",
-        name: "Blusa Elegante de Verano",
-        price: 25.99,
-        originalPrice: 45.99,
-        image: "https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&h=500&fit=crop",
-        rating: 4.6,
-        reviews: 345,
-        sales: 1800,
-        category: "Ropa Mujer",
-      },
-      {
-        id: "4",
-        sku: "SHOES-004",
-        name: "Zapatos Deportivos Modernos",
-        price: 44.99,
-        originalPrice: 79.99,
-        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=500&fit=crop",
-        rating: 4.7,
-        reviews: 456,
-        sales: 2100,
-        category: "Zapatos",
-        discount: 44,
-      },
-      {
-        id: "5",
-        sku: "ACC-005",
-        name: "Collar de Moda Dorado",
-        price: 12.99,
-        originalPrice: 24.99,
-        image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=500&fit=crop",
-        rating: 4.9,
-        reviews: 678,
-        sales: 3400,
-        category: "Accesorios",
-        discount: 48,
-      },
-      {
-        id: "6",
-        sku: "DRESS-006",
-        name: "Vestido de Noche Elegante",
-        price: 64.99,
-        originalPrice: 129.99,
-        image: "https://images.unsplash.com/photo-1595777707802-a89fbc6ce338?w=400&h=500&fit=crop",
-        rating: 4.8,
-        reviews: 234,
-        sales: 890,
-        category: "Vestidos",
-        discount: 50,
-      },
-    ];
-
-    setTimeout(() => {
-      setStore(mockStore);
-      setProducts(mockProducts);
-      setIsLoading(false);
-    }, 500);
-  }, [storeId]);
-
-  if (isLoading || !store) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -180,14 +57,43 @@ const StoreProfilePage = () => {
     );
   }
 
-  // Filtrar productos
-  const filteredProducts = products.filter((product) => {
-    const matchCategory = !selectedCategory || product.category === selectedCategory;
+  if (!storeData) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto px-4 py-12 text-center">
+          <h2 className="text-2xl font-bold text-gray-900">Tienda no encontrada</h2>
+          <p className="text-gray-600 mt-2">No pudimos encontrar la tienda que buscas.</p>
+          <Button onClick={() => navigate("/")} className="mt-4">Volver al inicio</Button>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Merge real data with mock defaults for missing fields
+  const store = {
+    ...storeData,
+    rating: 4.8,
+    reviews: 150,
+    followers: 342,
+    productsCount: productsData?.total || 0,
+    joinDate: new Date(storeData.created_at).toLocaleDateString(),
+    location: "Colombia",
+    responseTime: "Usually within 24h",
+    categories: ["Ropa", "Accesorios", "Tecnología"], // Mock categories for now
+    badges: storeData.is_active ? ["Verificado"] : [],
+  };
+
+  const products = productsData?.products || [];
+
+  // Filter products
+  const filteredProducts = products.filter((product: any) => {
     const matchSearch =
       !searchQuery ||
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchCategory && matchSearch;
+      product.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (product.sku && product.sku.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchSearch;
   });
 
   return (
@@ -197,33 +103,45 @@ const StoreProfilePage = () => {
       <main className="container mx-auto px-4 pb-0">
         {/* Banner */}
         <div className="relative h-64 md:h-80 bg-gray-200 rounded-b-lg overflow-hidden -mx-4 mb-0">
-          <img
-            src={store.banner}
-            alt={store.name}
-            className="w-full h-full object-cover"
-          />
+          {store.banner ? (
+            <img
+              src={store.banner}
+              alt={store.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-r from-blue-900 to-blue-600 flex items-center justify-center">
+                <ShoppingBag className="h-24 w-24 text-white/20" />
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
         </div>
 
-        {/* Perfil de Tienda */}
+        {/* Store Profile Card */}
         <div className="bg-white rounded-lg shadow-lg p-6 -mt-24 relative z-10 mb-8">
           <div className="flex flex-col md:flex-row md:items-start md:gap-6">
-            {/* Logo y Info Principal */}
+            {/* Logo & Main Info */}
             <div className="flex flex-col md:flex-row md:items-center gap-4 flex-1 mb-4 md:mb-0">
               {/* Logo */}
-              <img
-                src={store.logo}
-                alt={store.name}
-                className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-4 border-white shadow-lg"
-              />
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-lg border-4 border-white shadow-lg bg-white overflow-hidden flex items-center justify-center">
+                  {store.logo ? (
+                    <img
+                        src={store.logo}
+                        alt={store.name}
+                        className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-3xl font-bold text-gray-300">{store.name.substring(0, 2).toUpperCase()}</span>
+                  )}
+              </div>
 
-              {/* Info Básica */}
+              {/* Basic Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                     {store.name}
                   </h1>
-                  <CheckCircle className="w-6 h-6 text-blue-600" />
+                  {store.is_active && <CheckCircle className="w-6 h-6 text-blue-600" />}
                 </div>
 
                 {/* Badges */}
@@ -238,29 +156,27 @@ const StoreProfilePage = () => {
                   ))}
                 </div>
 
-                {/* Rating */}
+                {/* Stats */}
                 <div className="flex items-center gap-4 flex-wrap text-sm">
                   <div className="flex items-center gap-1">
                     <div className="flex text-yellow-400">
-                      {Array.from({ length: Math.round(store.rating) }).map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-current" />
-                      ))}
+                      <Star className="w-4 h-4 fill-current" />
                     </div>
                     <span className="font-semibold text-gray-900">{store.rating}</span>
-                    <span className="text-gray-600">({store.reviews.toLocaleString()})</span>
+                    <span className="text-gray-600">({store.reviews})</span>
                   </div>
                   <div className="text-gray-600">
-                    <span className="font-semibold">{store.followers.toLocaleString()}</span>{" "}
+                    <span className="font-semibold">{store.followers}</span>{" "}
                     seguidores
                   </div>
                   <div className="text-gray-600">
-                    <span className="font-semibold">{store.products}</span> productos
+                    <span className="font-semibold">{store.productsCount}</span> productos
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Botones de Acción */}
+            {/* Action Buttons */}
             <div className="flex flex-col gap-2 w-full md:w-auto">
               <Button className="w-full md:w-40 bg-blue-600 hover:bg-blue-700 text-white">
                 <Heart className="w-4 h-4 mr-2" />
@@ -283,7 +199,7 @@ const StoreProfilePage = () => {
             </div>
           </div>
 
-          {/* Info Adicional */}
+          {/* Additional Info */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-gray-200">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-gray-600" />
@@ -315,20 +231,22 @@ const StoreProfilePage = () => {
             </div>
           </div>
 
-          {/* Descripción */}
+          {/* Description */}
           <div className="mt-8 pt-8 border-t border-gray-200">
-            <p className="text-gray-600">{store.description}</p>
+            <p className="text-gray-600 whitespace-pre-line">
+                {store.description || "Sin descripción disponible."}
+            </p>
           </div>
         </div>
 
-        {/* Sección de Productos */}
+        {/* Products Section */}
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Productos de {store.name}</h2>
 
-          {/* Búsqueda y Filtros */}
+          {/* Search & Filter */}
           <div className="bg-white rounded-lg p-4 mb-6 shadow">
             <div className="flex flex-col md:flex-row gap-4">
-              {/* Búsqueda */}
+              {/* Search */}
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -342,7 +260,7 @@ const StoreProfilePage = () => {
                 </div>
               </div>
 
-              {/* Filtro de Categorías */}
+              {/* Category Filter */}
               <div className="md:w-48">
                 <select
                   value={selectedCategory || ""}
@@ -358,92 +276,65 @@ const StoreProfilePage = () => {
                 </select>
               </div>
             </div>
-
-            {/* Categorías como chips */}
-            <div className="flex flex-wrap gap-2 mt-4">
-              <button
-                onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedCategory === null
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                Todos
-              </button>
-              {store.categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                    selectedCategory === cat
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
           </div>
 
-          {/* Grid de productos */}
+          {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product: any) => {
+              // Handle images which might be JSONB array or string array
+              let imageUrl = null;
+              let images = product.images;
+              
+              // Safe parsing for JSONB
+              if (typeof images === 'string') {
+                try {
+                    images = JSON.parse(images);
+                } catch (e) {
+                    console.error("Error parsing images for product", product.id, e);
+                    images = [];
+                }
+              }
+
+              if (Array.isArray(images) && images.length > 0) {
+                  imageUrl = images[0];
+              }
+
+              return (
               <div
                 key={product.id}
                 className="bg-white rounded-lg overflow-hidden hover:shadow-xl transition duration-300 cursor-pointer"
                 onClick={() => navigate(`/producto/${product.sku}`)}
               >
-                {/* Imagen */}
+                {/* Image */}
                 <div className="relative h-56 bg-gray-100 overflow-hidden group">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
-                    loading="lazy"
-                  />
-                  {product.discount && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                      -{product.discount}%
-                    </div>
+                  {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={product.nombre}
+                        className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                        loading="lazy"
+                      />
+                  ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                          <ShoppingBag className="h-12 w-12" />
+                      </div>
                   )}
                 </div>
 
                 {/* Info */}
                 <div className="p-3">
                   <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2">
-                    {product.name}
+                    {product.nombre}
                   </h3>
 
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 mb-2">
-                    <div className="flex text-yellow-400">
-                      {Array.from({ length: Math.round(product.rating) }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-xs text-gray-600">({product.reviews})</span>
-                  </div>
-
-                  {/* Precio */}
+                  {/* Price */}
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-lg font-bold text-gray-900">
-                      ${product.price.toFixed(2)}
+                      ${Number(product.precio_venta || 0).toFixed(2)}
                     </span>
-                    {product.originalPrice && (
-                      <span className="text-xs text-gray-500 line-through">
-                        ${product.originalPrice.toFixed(2)}
-                      </span>
-                    )}
                   </div>
 
-                  {/* Ventas */}
-                  <p className="text-xs text-gray-500">
-                    {product.sales.toLocaleString()} vendidos
-                  </p>
-
-                  {/* Botones de Acción */}
+                  {/* Action Buttons */}
                   <div className="mt-3 space-y-2">
                     {(role === UserRole.ADMIN || role === UserRole.SELLER) ? (
                       <Button
@@ -469,7 +360,7 @@ const StoreProfilePage = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
 
           {filteredProducts.length === 0 && (

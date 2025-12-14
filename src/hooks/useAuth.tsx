@@ -108,25 +108,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setRole(userRole);
             setIsLoading(false);
 
-            // Solo redirigir si es un nuevo login desde una página PROTEGIDA
-            // NO redirigir si estamos en páginas públicas
+            // Solo redirigir si es un nuevo login desde una página PROTEGIDA o LOGIN
             if (event === 'SIGNED_IN') {
               const currentPath = window.location.pathname;
-              
-              // Páginas públicas donde NO queremos redirigir
-              const publicPages = ['/', '/marketplace', '/tienda/', '/producto/'];
-              const isPublicPage = publicPages.some(page => currentPath.startsWith(page));
-              
+
+              // Si estamos en login, SIEMPRE redirigir
+              if (currentPath === '/login') {
+                if (userRole === UserRole.SELLER) {
+                  navigate('/seller/adquisicion-lotes');
+                } else if (userRole === UserRole.ADMIN) {
+                  navigate('/admin/dashboard');
+                } else {
+                  navigate('/');
+                }
+                return;
+              }
+
+              // Páginas públicas donde NO queremos redirigir (si ya estaba ahí)
+              // Usamos validación más estricta para evitar que '/' coincida con todo
+              const publicPagesPrefixes = ['/marketplace', '/tienda/', '/producto/'];
+              const isPublicPage = currentPath === '/' || publicPagesPrefixes.some(page => currentPath.startsWith(page));
+
               if (isPublicPage) {
                 // Usuario se logueó en una página pública, lo dejamos donde está
                 return;
               }
-              
-              // Si está en una página protegida o de login, redirigir según rol
+
+              // Si está en una página protegida (que no sea las públicas listadas), redirigir según rol
               if (userRole === UserRole.SELLER) {
                 navigate('/seller/adquisicion-lotes');
               } else if (userRole === UserRole.ADMIN) {
                 navigate('/admin/dashboard');
+              } else {
+                navigate('/');
               }
             }
           }, 0);
