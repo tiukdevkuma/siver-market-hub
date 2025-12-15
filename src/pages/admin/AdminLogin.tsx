@@ -19,7 +19,8 @@ const authSchema = z.object({
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, role, isLoading: authLoading, signIn, signUp } = useAuth();
+  const { user, session, role, isLoading: authLoading, signIn, signUp } = useAuth();
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -30,16 +31,20 @@ const AdminLogin = () => {
 
   // Redirect if already logged in based on role
   useEffect(() => {
-    if (!authLoading && user) {
+    // Wait for auth to finish loading
+    if (authLoading) return;
+    
+    // If there's a session, user is logged in - redirect based on role
+    if (session) {
       if (role === 'admin') {
-        navigate("/admin");
+        navigate("/admin", { replace: true });
       } else if (role === 'seller') {
-        navigate("/seller/adquisicion-lotes");
+        navigate("/seller/adquisicion-lotes", { replace: true });
       } else {
-        navigate("/");
+        navigate("/", { replace: true });
       }
     }
-  }, [user, role, authLoading, navigate]);
+  }, [session, role, authLoading, navigate]);
 
   const validateForm = () => {
     try {
