@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -15,6 +15,7 @@ export interface StoreProfile {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  metadata: any;
 }
 
 export const useStore = (storeId: string | undefined) => {
@@ -70,5 +71,67 @@ export const useStoreProducts = (storeId: string | undefined, page = 0, limit = 
       return { products: data, total: count || 0 };
     },
     enabled: !!storeId,
+  });
+};
+
+// Approximate exchange rates to USD (as of late 2024/early 2025)
+const EXCHANGE_RATES: Record<string, number> = {
+  "COP": 0.00025, // 1 USD = 4000 COP
+  "MXN": 0.05,    // 1 USD = 20 MXN
+  "ARS": 0.001,   // 1 USD = 1000 ARS (approx)
+  "CLP": 0.00105, // 1 USD = 950 CLP
+  "PEN": 0.27,    // 1 USD = 3.7 PEN
+  "EUR": 1.05,    // 1 USD = 0.95 EUR
+  "USD": 1
+};
+
+export const useStoreSales = (storeId: string | undefined) => {
+  const { data: store } = useStore(storeId);
+
+  return useQuery({
+    queryKey: ["store", storeId, "sales"],
+    queryFn: async () => {
+      if (!store?.owner_user_id) return 0;
+
+      // 1. Get seller ID from the owner_user_id
+      const { data: seller, error: sellerError } = await supabase
+        .from("sellers")
+        .select("id")
+        .eq("user_id", store.owner_user_id)
+        .single();
+
+      if (sellerError || !seller) {
+          return 0;
+      }
+
+      // 2. Get orders in last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const { data: orders, error: ordersError } = await supabase
+        .from("orders_b2b")
+        .select("total_amount, currency")
+        .eq("seller_id", seller.id)
+        .gte("created_at", thirtyDaysAgo.toISOString());
+
+      if (ordersError) {
+          console.error("Error fetching orders", ordersError);
+          return 0;
+      }
+
+      // 3. Calculate total in USD (approx)
+      const totalUSD = orders.reduce((acc, order) => {
+        let amount = Number(order.total_amount) || 0;
+        const currency = order.currency || "USD"; // Default to USD if missing
+        
+        // Use exchange rate map
+        const rate = EXCHANGE_RATES[currency] || 1; // Default 1:1 if unknown currency
+        
+        return acc + (amount * rate);
+      }, 0);
+
+      return totalUSD;
+    },
+    enabled: !!store?.owner_user_id,
   });
 };

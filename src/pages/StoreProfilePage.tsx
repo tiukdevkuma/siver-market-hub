@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
-import { useStore, useStoreProducts } from "@/hooks/useStore";
+import { useStore, useStoreProducts, useStoreSales } from "@/hooks/useStore";
 import {
   Star,
   MessageCircle,
@@ -19,7 +19,23 @@ import {
   TrendingUp,
   CheckCircle,
   Search,
+  Facebook,
+  Instagram,
+  Phone,
+  Video,
+  ExternalLink
 } from "lucide-react";
+
+const COUNTRIES_MAP: Record<string, string> = {
+  "CO": "Colombia",
+  "MX": "México",
+  "AR": "Argentina",
+  "CL": "Chile",
+  "PE": "Perú",
+  "US": "Estados Unidos",
+  "ES": "España",
+  "OT": "Internacional"
+};
 
 const StoreProfilePage = () => {
   const { storeId } = useParams<{ storeId: string }>();
@@ -30,7 +46,8 @@ const StoreProfilePage = () => {
   // Fetch real store data
   const { data: storeData, isLoading: isStoreLoading } = useStore(storeId);
   const { data: productsData, isLoading: isProductsLoading } = useStoreProducts(storeId);
-  
+  const { data: totalSales30Days } = useStoreSales(storeId);
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -81,11 +98,16 @@ const StoreProfilePage = () => {
     followers: 342,
     productsCount: productsData?.total || 0,
     joinDate: new Date(storeData.created_at).toLocaleDateString(),
-    location: "Colombia",
+    location: COUNTRIES_MAP[storeData.metadata?.country] || "Colombia",
     responseTime: "Usually within 24h",
     categories: ["Ropa", "Accesorios", "Tecnología"], // Mock categories for now
     badges: storeData.is_active ? ["Verificado"] : [],
+    social: storeData.metadata?.social || {}
   };
+
+  // Generate approx sales for last 24h (Mock logic for demo)
+  // Use store ID to make it consistent but "random" looking
+  const approxSales24h = Math.floor((store.id.charCodeAt(0) + new Date().getDate()) % 20) + 5;
 
   const products = productsData?.products || [];
 
@@ -186,10 +208,16 @@ const StoreProfilePage = () => {
                       {badge}
                     </span>
                   ))}
+                  {(totalSales30Days || 0) >= 1500 && (
+                    <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-semibold flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        ~{approxSales24h} ventas (24h)
+                    </span>
+                  )}
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-4 flex-wrap text-sm">
+                <div className="flex items-center gap-4 flex-wrap text-sm mb-3">
                   <div className="flex items-center gap-1">
                     <div className="flex text-yellow-400">
                       <Star className="w-4 h-4 fill-current" />
@@ -204,6 +232,30 @@ const StoreProfilePage = () => {
                   <div className="text-gray-600">
                     <span className="font-semibold">{store.productsCount}</span> productos
                   </div>
+                </div>
+
+                {/* Social Media Links (Top) */}
+                <div className="flex gap-3 mt-2">
+                    {store.social.facebook && (
+                        <a href={store.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-600 transition-colors">
+                            <Facebook className="h-5 w-5" />
+                        </a>
+                    )}
+                    {store.social.instagram && (
+                        <a href={store.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-pink-600 transition-colors">
+                            <Instagram className="h-5 w-5" />
+                        </a>
+                    )}
+                    {store.social.whatsapp && (
+                        <a href={`https://wa.me/${store.social.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-green-600 transition-colors">
+                            <Phone className="h-5 w-5" />
+                        </a>
+                    )}
+                    {store.social.tiktok && (
+                        <a href={store.social.tiktok} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-black transition-colors">
+                            <Video className="h-5 w-5" />
+                        </a>
+                    )}
                 </div>
               </div>
             </div>
@@ -317,7 +369,7 @@ const StoreProfilePage = () => {
               // Handle images which might be JSONB array or string array
               let imageUrl = null;
               let images = product.images;
-              
+
               // Safe parsing for JSONB
               if (typeof images === 'string') {
                 try {
@@ -403,6 +455,51 @@ const StoreProfilePage = () => {
             </div>
           )}
         </div>
+
+        {/* Store Footer / Social Links */}
+        <div className="bg-white border-t border-gray-200 py-12 mt-12 rounded-lg shadow-sm">
+            <div className="container mx-auto px-4 text-center">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Sigue a {store.name}</h3>
+                <div className="flex justify-center gap-8 mb-8">
+                    {store.social.facebook && (
+                        <a href={store.social.facebook} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 text-gray-500 hover:text-blue-600 transition-colors group">
+                            <div className="p-3 bg-gray-100 rounded-full group-hover:bg-blue-100 transition-colors">
+                                <Facebook className="h-6 w-6" />
+                            </div>
+                            <span className="text-sm font-medium">Facebook</span>
+                        </a>
+                    )}
+                    {store.social.instagram && (
+                        <a href={store.social.instagram} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 text-gray-500 hover:text-pink-600 transition-colors group">
+                            <div className="p-3 bg-gray-100 rounded-full group-hover:bg-pink-100 transition-colors">
+                                <Instagram className="h-6 w-6" />
+                            </div>
+                            <span className="text-sm font-medium">Instagram</span>
+                        </a>
+                    )}
+                    {store.social.whatsapp && (
+                        <a href={`https://wa.me/${store.social.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 text-gray-500 hover:text-green-600 transition-colors group">
+                            <div className="p-3 bg-gray-100 rounded-full group-hover:bg-green-100 transition-colors">
+                                <Phone className="h-6 w-6" />
+                            </div>
+                            <span className="text-sm font-medium">WhatsApp</span>
+                        </a>
+                    )}
+                    {store.social.tiktok && (
+                        <a href={store.social.tiktok} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-2 text-gray-500 hover:text-black transition-colors group">
+                            <div className="p-3 bg-gray-100 rounded-full group-hover:bg-gray-200 transition-colors">
+                                <Video className="h-6 w-6" />
+                            </div>
+                            <span className="text-sm font-medium">TikTok</span>
+                        </a>
+                    )}
+                </div>
+                <p className="text-gray-500 text-sm">
+                     {new Date().getFullYear()} {store.name}. Todos los derechos reservados.
+                </p>
+            </div>
+        </div>
+
       </main>
 
       <Footer />
