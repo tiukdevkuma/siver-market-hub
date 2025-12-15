@@ -1,4 +1,5 @@
-﻿import { StoreEditDialog } from "@/components/seller/StoreEditDialog";
+import { StoreEditDialog } from "@/components/seller/StoreEditDialog";
+import { UserEditDialog } from "@/components/seller/UserEditDialog";
 import { SellerLayout } from "@/components/seller/SellerLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { useStoreByOwner } from "@/hooks/useStore";
@@ -16,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
 const SellerAccountPage = () => {
@@ -26,6 +27,27 @@ const SellerAccountPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreatingStore, setIsCreatingStore] = useState(false);
+
+  // Fetch seller verification status
+  const { data: seller } = useQuery({
+    queryKey: ["seller", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("sellers")
+        .select("is_verified")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) {
+        console.error("Error fetching seller:", error);
+        return null;
+      }
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+
+  const isVerified = seller?.is_verified || false;
 
   useEffect(() => {
     console.log("SellerAccountPage - User:", user);
@@ -188,10 +210,20 @@ const SellerAccountPage = () => {
                     <div>
                         <h3 className="font-bold text-xl text-gray-900">{user?.name || "Usuario"}</h3>
                         <p className="text-sm text-gray-500 font-medium">{user?.email}</p>
-                        <Badge variant="secondary" className="mt-3 px-4 py-1 bg-blue-50 text-[#071d7f] hover:bg-blue-100 transition-colors">
-                            {user?.role || "Vendedor"}
-                        </Badge>
+                        <div className="flex items-center justify-center gap-2 mt-3">
+                          <Badge variant="secondary" className="px-4 py-1 bg-blue-50 text-[#071d7f] hover:bg-blue-100 transition-colors">
+                              {user?.role || "Vendedor"}
+                          </Badge>
+                          {isVerified && (
+                            <Badge className="bg-green-100 text-green-700 hover:bg-green-200">
+                              Verificado
+                            </Badge>
+                          )}
+                        </div>
                     </div>
+
+                    {/* Edit User Button */}
+                    <UserEditDialog user={user} isVerified={isVerified} />
 
                     <Separator className="bg-gray-100" />
 
