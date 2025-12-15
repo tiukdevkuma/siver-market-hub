@@ -19,6 +19,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useSellerStatuses } from "@/hooks/useSellerStatuses";
+import { SellerStatusUpload } from "@/components/seller/SellerStatusUpload";
+import { SellerStatusViewer } from "@/components/seller/SellerStatusViewer";
 
 const SellerAccountPage = () => {
   const navigate = useNavigate();
@@ -27,6 +30,10 @@ const SellerAccountPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isCreatingStore, setIsCreatingStore] = useState(false);
+  const [showStatusViewer, setShowStatusViewer] = useState(false);
+  
+  // Statuses hook
+  const { statuses, uploadStatus, deleteStatus, loading: statusesLoading } = useSellerStatuses(store?.id || null);
 
   // Fetch seller verification status
   const { data: seller } = useQuery({
@@ -129,15 +136,32 @@ const SellerAccountPage = () => {
             
             <div className="container mx-auto px-6 h-full flex items-end pb-8 relative z-10">
                 <div className="flex flex-col md:flex-row md:items-end gap-6 w-full">
-                    <div className="relative">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-cyan-300 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
-                        <Avatar className="h-32 w-32 border-4 border-white shadow-2xl relative">
-                            <AvatarImage src={store?.logo || ""} alt={store?.name} className="object-cover" />
-                            <AvatarFallback className="text-4xl font-bold bg-white text-[#071d7f]">
-                                {store?.name?.substring(0, 2).toUpperCase() || user?.name?.substring(0, 2).toUpperCase() || "ST"}
-                            </AvatarFallback>
-                        </Avatar>
-                        <div className="absolute bottom-2 right-2 h-6 w-6 bg-green-500 border-4 border-white rounded-full" title="Online"></div>
+                    {/* Status Upload & Avatar */}
+                    <div className="flex items-end gap-4">
+                        {store?.id && (
+                            <SellerStatusUpload 
+                                onUpload={uploadStatus}
+                                hasActiveStatus={statuses.length > 0}
+                            />
+                        )}
+                        <div 
+                            className={`relative cursor-pointer ${statuses.length > 0 ? 'ring-4 ring-primary ring-offset-2 ring-offset-[#071d7f] rounded-full' : ''}`}
+                            onClick={() => statuses.length > 0 && setShowStatusViewer(true)}
+                        >
+                            <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 to-cyan-300 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                            <Avatar className="h-32 w-32 border-4 border-white shadow-2xl relative">
+                                <AvatarImage src={store?.logo || ""} alt={store?.name} className="object-cover" />
+                                <AvatarFallback className="text-4xl font-bold bg-white text-[#071d7f]">
+                                    {store?.name?.substring(0, 2).toUpperCase() || user?.name?.substring(0, 2).toUpperCase() || "ST"}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="absolute bottom-2 right-2 h-6 w-6 bg-green-500 border-4 border-white rounded-full" title="Online"></div>
+                            {statuses.length > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                                    {statuses.length}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="mb-2 text-white flex-1">
@@ -382,6 +406,18 @@ const SellerAccountPage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Status Viewer Modal */}
+      {showStatusViewer && statuses.length > 0 && (
+        <SellerStatusViewer
+          statuses={statuses}
+          onClose={() => setShowStatusViewer(false)}
+          onDelete={deleteStatus}
+          isOwner={true}
+          storeName={store?.name}
+          storeLogo={store?.logo}
+        />
+      )}
     </SellerLayout>
   );
 };
