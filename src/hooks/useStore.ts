@@ -60,7 +60,7 @@ export const useStoreProducts = (storeId: string | undefined, page = 0, limit = 
 
       const { data, error, count } = await supabase
         .from("seller_catalog")
-        .select("*", { count: "exact" })
+        .select("*, product:products(*)", { count: "exact" })
         .eq("seller_store_id", storeId)
         .eq("is_active", true)
         .range(page * limit, (page + 1) * limit - 1)

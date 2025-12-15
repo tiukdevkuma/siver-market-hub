@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { UserRole } from "@/types/auth";
 import { useStore, useStoreProducts } from "@/hooks/useStore";
@@ -24,7 +25,8 @@ const StoreProfilePage = () => {
   const { storeId } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { role } = useAuth();
-  
+  const { toast } = useToast();
+
   // Fetch real store data
   const { data: storeData, isLoading: isStoreLoading } = useStore(storeId);
   const { data: productsData, isLoading: isProductsLoading } = useStoreProducts(storeId);
@@ -95,6 +97,36 @@ const StoreProfilePage = () => {
       (product.sku && product.sku.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchSearch;
   });
+
+  const handleShare = async () => {
+    const shareData = {
+      title: store.name,
+      text: `¡Visita ${store.name} en Siver Market Hub! ${store.description ? "- " + store.description : ""}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Enlace copiado",
+          description: "El enlace de la tienda ha sido copiado al portapapeles.",
+        });
+      } catch (err) {
+        toast({
+          title: "Error",
+          description: "No se pudo copiar el enlace.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -192,6 +224,7 @@ const StoreProfilePage = () => {
               <Button
                 variant="outline"
                 className="w-full md:w-40 border-gray-300 text-gray-700 hover:bg-gray-50"
+                onClick={handleShare}
               >
                 <Share2 className="w-4 h-4 mr-2" />
                 Compartir
