@@ -621,6 +621,41 @@ export type Database = {
           },
         ]
       }
+      seller_statuses: {
+        Row: {
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          image_url: string
+          store_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url: string
+          store_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seller_statuses_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sellers: {
         Row: {
           business_name: string | null
