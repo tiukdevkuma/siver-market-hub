@@ -22,7 +22,7 @@ const MobileBottomNav = () => {
   const navItems = [
     { href: "/", icon: Home, label: "Acheter" },
     { href: "/categorias", icon: LayoutGrid, label: "Catégories" },
-    { href: "/productos", icon: Sparkles, label: "Tendances", hasDot: true },
+    { href: "/tendencias", icon: Sparkles, label: "Tendances", hasDot: true },
     { href: "/carrito", icon: ShoppingBag, label: "Panier", badge: "99+" },
     { href: accountLink, icon: User, label: "Moi" },
   ];
