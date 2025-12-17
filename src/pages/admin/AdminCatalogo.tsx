@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCatalog, Product, ProductFilters } from '@/hooks/useCatalog';
-import { Package, AlertTriangle, TrendingDown, Search, Upload, Plus, Download, Settings, Loader2, Cpu } from 'lucide-react';
+import { Package, AlertTriangle, TrendingDown, Search, Upload, Plus, Download, Settings, Loader2, Cpu, ExternalLink } from 'lucide-react';
 import BulkImportDialog from '@/components/catalog/BulkImportDialog';
 import ProductFormDialog from '@/components/catalog/ProductFormDialog';
 import ProductEditDialog from '@/components/catalog/ProductEditDialog';
@@ -219,19 +219,20 @@ const AdminCatalogo = () => {
                     <TableHead className="text-muted-foreground text-center">MOQ</TableHead>
                     <TableHead className="text-muted-foreground text-center">Stock</TableHead>
                     <TableHead className="text-muted-foreground text-center">Estado</TableHead>
+                    <TableHead className="text-muted-foreground">Proveedor</TableHead>
                     <TableHead className="text-muted-foreground text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loadingProducts ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-10">
+                      <TableCell colSpan={8} className="text-center py-10">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
                       </TableCell>
                     </TableRow>
                   ) : products?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-10 text-muted-foreground">
                         No hay productos en el catálogo
                       </TableCell>
                     </TableRow>
@@ -260,6 +261,22 @@ const AdminCatalogo = () => {
                         <TableCell className="text-center text-foreground">{product.moq}</TableCell>
                         <TableCell className="text-center text-foreground">{product.stock_fisico}</TableCell>
                         <TableCell className="text-center">{getStockBadge(product.stock_status)}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">{product.suppliers?.name || '-'}</span>
+                            {product.url_origen && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={() => window.open(product.url_origen, '_blank')}
+                                title="Ver en proveedor"
+                              >
+                                <ExternalLink className="h-3 w-3 text-primary" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"

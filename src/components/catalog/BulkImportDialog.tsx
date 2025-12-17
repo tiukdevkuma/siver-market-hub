@@ -26,6 +26,8 @@ interface ParsedRow {
   stock_fisico: number;
   url_imagen?: string;
   categoria_id?: string;
+  proveedor_id?: string;
+  url_origen?: string;
   errors: string[];
   isValid: boolean;
 }
@@ -39,6 +41,8 @@ interface ColumnMapping {
   stock_fisico: string;
   url_imagen: string;
   categoria: string;
+  proveedor: string;
+  url_origen: string;
 }
 
 const TEMPLATE_COLUMNS = [
@@ -49,7 +53,9 @@ const TEMPLATE_COLUMNS = [
   'MOQ_Cantidad_Minima',
   'Stock_Fisico',
   'URL_Imagen_Principal',
-  'Categoria'
+  'Categoria',
+  'Proveedor',
+  'URL_Proveedor'
 ];
 
 const DEFAULT_MAPPING: ColumnMapping = {
@@ -60,12 +66,15 @@ const DEFAULT_MAPPING: ColumnMapping = {
   moq: 'MOQ_Cantidad_Minima',
   stock_fisico: 'Stock_Fisico',
   url_imagen: 'URL_Imagen_Principal',
-  categoria: 'Categoria'
+  categoria: 'Categoria',
+  proveedor: 'Proveedor',
+  url_origen: 'URL_Proveedor'
 };
 
 const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
-  const { bulkImportProducts, useCategories } = useCatalog();
+  const { bulkImportProducts, useCategories, useSuppliers } = useCatalog();
   const { data: categories } = useCategories();
+  const { data: suppliers } = useSuppliers();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -79,7 +88,7 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
 
   const downloadTemplate = () => {
     const csvContent = TEMPLATE_COLUMNS.join(',') + '\n' +
-      'SKU-001,Producto Ejemplo,Descripción del producto,25.99,10,100,https://ejemplo.com/imagen.jpg,Ropa';
+      'SKU-001,Producto Ejemplo,Descripción del producto,25.99,10,100,https://ejemplo.com/imagen.jpg,Ropa,AliExpress,https://aliexpress.com/item/123';
     
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -137,10 +146,14 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
             autoMapping.moq = header;
           } else if (lowerHeader.includes('stock') || lowerHeader.includes('cantidad') || lowerHeader.includes('qty')) {
             autoMapping.stock_fisico = header;
-          } else if (lowerHeader.includes('imagen') || lowerHeader.includes('image') || lowerHeader.includes('url') || lowerHeader.includes('foto')) {
+          } else if (lowerHeader.includes('imagen') || lowerHeader.includes('image') || lowerHeader.includes('foto')) {
             autoMapping.url_imagen = header;
           } else if (lowerHeader.includes('categ') || lowerHeader.includes('category')) {
             autoMapping.categoria = header;
+          } else if (lowerHeader.includes('proveedor') || lowerHeader.includes('supplier') || lowerHeader.includes('vendor')) {
+            autoMapping.proveedor = header;
+          } else if (lowerHeader.includes('url_proveedor') || lowerHeader.includes('url_origen') || lowerHeader.includes('source_url') || lowerHeader.includes('link')) {
+            autoMapping.url_origen = header;
           }
         });
         setMapping(autoMapping);
@@ -167,6 +180,8 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
       const stockIndex = getColumnIndex(mapping.stock_fisico);
       const imagenIndex = getColumnIndex(mapping.url_imagen);
       const categoriaIndex = getColumnIndex(mapping.categoria);
+      const proveedorIndex = getColumnIndex(mapping.proveedor);
+      const urlOrigenIndex = getColumnIndex(mapping.url_origen);
 
       const sku = skuIndex >= 0 ? row[skuIndex]?.trim() : '';
       const nombre = nombreIndex >= 0 ? row[nombreIndex]?.trim() : '';
@@ -176,6 +191,8 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
       const stockStr = stockIndex >= 0 ? row[stockIndex]?.trim() : '0';
       const imagen = imagenIndex >= 0 ? row[imagenIndex]?.trim() : '';
       const categoriaName = categoriaIndex >= 0 ? row[categoriaIndex]?.trim() : '';
+      const proveedorName = proveedorIndex >= 0 ? row[proveedorIndex]?.trim() : '';
+      const urlOrigen = urlOrigenIndex >= 0 ? row[urlOrigenIndex]?.trim() : '';
 
       // Find category ID by name (case-insensitive)
       let categoriaId: string | undefined = undefined;
@@ -190,6 +207,17 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
       // Use default category if no category found and default is set
       if (!categoriaId && defaultCategoryId) {
         categoriaId = defaultCategoryId;
+      }
+
+      // Find supplier ID by name (case-insensitive)
+      let proveedorId: string | undefined = undefined;
+      if (proveedorName && suppliers) {
+        const foundSup = suppliers.find(s => 
+          s.name.toLowerCase() === proveedorName.toLowerCase()
+        );
+        if (foundSup) {
+          proveedorId = foundSup.id;
+        }
       }
 
       // Validations
@@ -214,6 +242,8 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
         stock_fisico: isNaN(stock) ? 0 : stock,
         url_imagen: imagen || undefined,
         categoria_id: categoriaId,
+        proveedor_id: proveedorId,
+        url_origen: urlOrigen || undefined,
         errors,
         isValid: errors.length === 0
       };
@@ -244,6 +274,8 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
         stock_fisico: row.stock_fisico,
         imagen_principal: row.url_imagen,
         categoria_id: row.categoria_id,
+        proveedor_id: row.proveedor_id,
+        url_origen: row.url_origen,
       }));
 
       await bulkImportProducts.mutateAsync(products);
@@ -327,6 +359,8 @@ const BulkImportDialog = ({ open, onOpenChange }: BulkImportDialogProps) => {
                 <li><span className="font-mono text-xs bg-background px-1 rounded">Stock_Fisico</span> - Unidades disponibles</li>
                 <li><span className="font-mono text-xs bg-background px-1 rounded">URL_Imagen_Principal</span> - URL de la imagen</li>
                 <li><span className="font-mono text-xs bg-background px-1 rounded">Categoria</span> - Nombre de la categoría</li>
+                <li><span className="font-mono text-xs bg-background px-1 rounded">Proveedor</span> - Nombre del proveedor (opcional)</li>
+                <li><span className="font-mono text-xs bg-background px-1 rounded">URL_Proveedor</span> - Link al producto del proveedor (opcional)</li>
               </ul>
             </div>
           </div>
