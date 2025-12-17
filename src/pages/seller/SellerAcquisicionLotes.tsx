@@ -1,23 +1,37 @@
-ï»¿import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useCartB2B } from '@/hooks/useCartB2B';
-import { SellerLayout } from '@/components/seller/SellerLayout';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import SearchFilterB2B from '@/components/b2b/SearchFilterB2B';
-import ProductCardB2B from '@/components/b2b/ProductCardB2B';
-import CartSidebarB2B from '@/components/b2b/CartSidebarB2B';
-import FeaturedProductsCarousel from '../../components/b2b/FeaturedProductsCarousel';
-import { B2BFilters, ProductB2BCard } from '@/types/b2b';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
-import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useCartB2B } from "@/hooks/useCartB2B";
+import { SellerLayout } from "@/components/seller/SellerLayout";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import SearchFilterB2B from "@/components/b2b/SearchFilterB2B";
+import ProductCardB2B from "@/components/b2b/ProductCardB2B";
+import CartSidebarB2B from "@/components/b2b/CartSidebarB2B";
+import { B2BFilters, ProductB2BCard, CartItemB2B } from "@/types/b2b";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast } from "@/hooks/use-toast";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Filter, ChevronLeft, ChevronRight, Menu } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
+import FeaturedProductsCarousel from "@/components/b2b/FeaturedProductsCarousel";
+
+import MobileBottomNav from "@/components/categories/MobileBottomNav";
 
 const SellerAcquisicionLotes = () => {
   const { user, isLoading } = useAuth();
   const { cart, addItem, updateQuantity, removeItem } = useCartB2B();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const { toggleSidebar } = useSidebar();
+
+  const handleAddToCart = (item: CartItemB2B) => {
+    addItem(item);
+    toast({
+      title: "Producto agregado",
+      description: `${item.nombre} (${item.cantidad} unidades) se ha añadido al carrito.`,
+    });
+  };
   
   const [products, setProducts] = useState<ProductB2BCard[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ProductB2BCard[]>([]);
@@ -26,10 +40,10 @@ const SellerAcquisicionLotes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const [filters, setFilters] = useState<B2BFilters>({
-    searchQuery: '',
+    searchQuery: "",
     category: null,
-    stockStatus: 'all',
-    sortBy: 'newest',
+    stockStatus: "all",
+    sortBy: "newest",
   });
 
   const [whatsappNumber, setWhatsappNumber] = useState("50369596772"); // Default
@@ -39,58 +53,58 @@ const SellerAcquisicionLotes = () => {
     if (saved) setWhatsappNumber(saved);
   }, []);
 
-  // Mock products - Estos vendrÃ­an del backend
+  // Mock products - Estos vendrían del backend
   useEffect(() => {
     const mockProducts: ProductB2BCard[] = [
       {
-        id: '1',
-        sku: 'TSHIRT-001',
-        nombre: 'Camiseta BÃ¡sica Blanca - Talla M',
+        id: "1",
+        sku: "TSHIRT-001",
+        nombre: "Camiseta Básica Blanca - Talla M",
         precio_b2b: 2.5,
         moq: 50,
         stock_fisico: 500,
-        imagen_principal: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop',
-        categoria_id: 'cat1',
+        imagen_principal: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop",
+        categoria_id: "cat1",
       },
       {
-        id: '2',
-        sku: 'JEANS-001',
-        nombre: 'PantalÃ³n Vaquero Azul - Talla 32',
+        id: "2",
+        sku: "JEANS-001",
+        nombre: "Pantalón Vaquero Azul - Talla 32",
         precio_b2b: 8.5,
         moq: 30,
         stock_fisico: 200,
-        imagen_principal: 'https://images.unsplash.com/photo-1542272604-787c62d465d1?w=300&h=300&fit=crop',
-        categoria_id: 'cat1',
+        imagen_principal: "https://images.unsplash.com/photo-1542272604-787c62d465d1?w=300&h=300&fit=crop",
+        categoria_id: "cat1",
       },
       {
-        id: '3',
-        sku: 'SHOES-001',
-        nombre: 'Zapatillas Deportivas Negras',
+        id: "3",
+        sku: "SHOES-001",
+        nombre: "Zapatillas Deportivas Negras",
         precio_b2b: 12.0,
         moq: 20,
         stock_fisico: 150,
-        imagen_principal: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop',
-        categoria_id: 'cat2',
+        imagen_principal: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop",
+        categoria_id: "cat2",
       },
       {
-        id: '4',
-        sku: 'DRESS-001',
-        nombre: 'Vestido Casual Floral',
+        id: "4",
+        sku: "DRESS-001",
+        nombre: "Vestido Casual Floral",
         precio_b2b: 6.0,
         moq: 25,
         stock_fisico: 75,
-        imagen_principal: 'https://images.unsplash.com/photo-1595777707802-a89fbc6ce338?w=300&h=300&fit=crop',
-        categoria_id: 'cat1',
+        imagen_principal: "https://images.unsplash.com/photo-1595777707802-a89fbc6ce338?w=300&h=300&fit=crop",
+        categoria_id: "cat1",
       },
       {
-        id: '5',
-        sku: 'ACC-001',
-        nombre: 'Correa de Cuero MarrÃ³n',
+        id: "5",
+        sku: "ACC-001",
+        nombre: "Correa de Cuero Marrón",
         precio_b2b: 3.5,
         moq: 100,
         stock_fisico: 0,
-        imagen_principal: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=300&h=300&fit=crop',
-        categoria_id: 'cat3',
+        imagen_principal: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=300&h=300&fit=crop",
+        categoria_id: "cat3",
       },
     ];
     setProducts(mockProducts);
@@ -98,7 +112,7 @@ const SellerAcquisicionLotes = () => {
     // Load featured products
     const savedIds = localStorage.getItem("admin_b2b_featured_ids");
     if (savedIds) {
-      const ids = savedIds.split(',').map(id => id.trim());
+      const ids = savedIds.split(",").map(id => id.trim());
       const featured = mockProducts.filter(p => ids.includes(p.id));
       setFeaturedProducts(featured);
     } else {
@@ -111,7 +125,7 @@ const SellerAcquisicionLotes = () => {
   useEffect(() => {
     let result = [...products];
 
-    // BÃºsqueda
+    // Búsqueda
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       result = result.filter(
@@ -121,18 +135,18 @@ const SellerAcquisicionLotes = () => {
       );
     }
 
-    // CategorÃ­a
+    // Categoría
     if (filters.category) {
       result = result.filter((p) => p.categoria_id === filters.category);
     }
 
     // Stock
-    if (filters.stockStatus !== 'all') {
-      if (filters.stockStatus === 'in_stock') {
+    if (filters.stockStatus !== "all") {
+      if (filters.stockStatus === "in_stock") {
         result = result.filter((p) => p.stock_fisico > 0);
-      } else if (filters.stockStatus === 'out_of_stock') {
+      } else if (filters.stockStatus === "out_of_stock") {
         result = result.filter((p) => p.stock_fisico === 0);
-      } else if (filters.stockStatus === 'low_stock') {
+      } else if (filters.stockStatus === "low_stock") {
         result = result.filter((p) => p.stock_fisico > 0 && p.stock_fisico < p.moq * 2);
       }
     }
@@ -140,13 +154,13 @@ const SellerAcquisicionLotes = () => {
     // Ordenamiento
     result.sort((a, b) => {
       switch (filters.sortBy) {
-        case 'price_asc':
+        case "price_asc":
           return a.precio_b2b - b.precio_b2b;
-        case 'price_desc':
+        case "price_desc":
           return b.precio_b2b - a.precio_b2b;
-        case 'moq_asc':
+        case "moq_asc":
           return a.moq - b.moq;
-        case 'moq_desc':
+        case "moq_desc":
           return b.moq - a.moq;
         default:
           return 0; // newest logic would go here
@@ -156,21 +170,21 @@ const SellerAcquisicionLotes = () => {
     setFilteredProducts(result);
   }, [products, filters]);
 
-  // PaginaciÃ³n
+  // Paginación
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
-  // Reset a pÃ¡gina 1 cuando cambian los filtros
+  // Reset a página 1 cuando cambian los filtros
   useEffect(() => {
     setCurrentPage(1);
   }, [filters]);
 
   const categories = [
-    { id: 'cat1', nombre: 'Ropa' },
-    { id: 'cat2', nombre: 'Zapatos' },
-    { id: 'cat3', nombre: 'Accesorios' },
+    { id: "cat1", nombre: "Ropa" },
+    { id: "cat2", nombre: "Zapatos" },
+    { id: "cat3", nombre: "Accesorios" },
   ];
 
   if (isLoading) {
@@ -187,9 +201,20 @@ const SellerAcquisicionLotes = () => {
   return (
     <SellerLayout>
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        {!isMobile && <Header />}
         
-        <main className="container mx-auto px-4 pb-8">
+        <main className="container mx-auto px-4 pb-24 pt-4">
+          {/* Mobile Header */}
+          {isMobile && (
+            <div className="flex items-center justify-between mb-6">
+              <Button variant="ghost" size="icon" onClick={toggleSidebar} className="-ml-2">
+                <Menu className="h-6 w-6" />
+              </Button>
+              <h1 className="text-lg font-bold text-gray-900">Adquisición B2B</h1>
+              <div className="w-10" /> {/* Spacer */}
+            </div>
+          )}
+
           {/* Hero Carousel (Mobile Only) */}
           {isMobile && featuredProducts.length > 0 && (
             <div className="mb-6 -mx-4">
@@ -197,24 +222,53 @@ const SellerAcquisicionLotes = () => {
             </div>
           )}
 
-          {/* Encabezado */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              CatÃ¡logo de AdquisiciÃ³n B2B
-            </h1>
-            <p className="text-gray-600">
-              Bienvenido, {user?.name}. Busca y selecciona productos al por mayor.
-            </p>
-          </div>
+          {/* Encabezado Desktop */}
+          {!isMobile && (
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Catálogo de Adquisición B2B
+              </h1>
+              <p className="text-gray-600">
+                Bienvenido, {user?.name}. Busca y selecciona productos al por mayor.
+              </p>
+            </div>
+          )}
 
         {/* Filtros */}
         {isMobile ? (
           <div className="mb-6">
+            {/* Categorías Horizontales */}
+            <div className="flex gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
+              <button
+                onClick={() => setFilters({ ...filters, category: null })}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  !filters.category
+                    ? "bg-blue-600 text-white"
+                    : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Todos
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setFilters({ ...filters, category: cat.id === filters.category ? null : cat.id })}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    filters.category === cat.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {cat.nombre}
+                </button>
+              ))}
+            </div>
+            
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" className="w-full flex items-center gap-2">
                   <Filter className="h-4 w-4" />
-                  Filtros y BÃºsqueda
+                  Filtros y Búsqueda
                 </Button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
@@ -256,19 +310,19 @@ const SellerAcquisicionLotes = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4">
                 {paginatedProducts.map((product) => (
                   <ProductCardB2B
                     key={product.id}
                     product={product}
-                    onAddToCart={addItem}
+                    onAddToCart={handleAddToCart}
                     cartItem={cart.items.find(item => item.productId === product.id)}
                     whatsappNumber={whatsappNumber}
                   />
                 ))}
               </div>
 
-              {/* PaginaciÃ³n */}
+              {/* Paginación */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8">
                   <button
@@ -286,8 +340,8 @@ const SellerAcquisicionLotes = () => {
                         onClick={() => setCurrentPage(page)}
                         className={`px-3 py-2 rounded-lg transition ${
                           currentPage === page
-                            ? 'bg-blue-600 text-white'
-                            : 'border border-gray-300 hover:bg-gray-50'
+                            ? "bg-blue-600 text-white"
+                            : "border border-gray-300 hover:bg-gray-50"
                         }`}
                       >
                         {page}

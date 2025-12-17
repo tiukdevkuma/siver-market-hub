@@ -21,7 +21,7 @@ const MobileBottomNav = () => {
   const cartLink = role === UserRole.SELLER ? "/seller/carrito" : "/carrito";
   
   // If seller, "Categorías" should link to B2B catalog or open filter
-  // For now, let"s point it to the B2B catalog page if user is seller
+  // For now, let's point it to the B2B catalog page if user is seller
   const categoriesLink = role === UserRole.SELLER ? "/seller/adquisicion-lotes" : "/categorias";
   
   const navItems = [
