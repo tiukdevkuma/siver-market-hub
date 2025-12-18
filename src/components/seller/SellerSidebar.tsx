@@ -3,71 +3,51 @@ import { ShoppingCart, Home, LogOut, ShoppingBag, ChevronLeft, Package, Heart, U
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
-  useSidebar,
-  SidebarSeparator,
-} from "@/components/ui/sidebar";
-
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar, SidebarSeparator } from "@/components/ui/sidebar";
 export function SellerSidebar() {
-  const { state, toggleSidebar } = useSidebar();
-  const { user, signOut } = useAuth();
+  const {
+    state,
+    toggleSidebar
+  } = useSidebar();
+  const {
+    user,
+    signOut
+  } = useAuth();
   const isCollapsed = state === "collapsed";
   const location = useLocation();
-
-  const mainNavItems = [
-    {
-      title: "Comprar Lotes",
-      url: "/seller/adquisicion-lotes",
-      icon: ShoppingCart,
-      badge: "B2B"
-    },
-    {
-      title: "Mis Pedidos",
-      url: "/seller/pedidos",
-      icon: ClipboardList,
-    },
-    {
-      title: "Inventario B2C",
-      url: "/seller/inventario",
-      icon: LayoutGrid,
-      badge: "Nuevo"
-    },
-    {
-      title: "Mi Catálogo",
-      url: "/seller/catalogo",
-      icon: Store,
-    },
-    {
-      title: "Carrito B2B",
-      url: "/seller/carrito",
-      icon: Package,
-    },
-    {
-      title: "Lista de Deseos",
-      url: "/seller/favoritos",
-      icon: Heart,
-    },
-    {
-      title: "Mi Cuenta",
-      url: "/seller/cuenta",
-      icon: User,
-    }
-  ];
-
+  const mainNavItems = [{
+    title: "Comprar Lotes",
+    url: "/seller/adquisicion-lotes",
+    icon: ShoppingCart,
+    badge: "B2B"
+  }, {
+    title: "Mis Pedidos",
+    url: "/seller/pedidos",
+    icon: ClipboardList
+  }, {
+    title: "Inventario B2C",
+    url: "/seller/inventario",
+    icon: LayoutGrid,
+    badge: "Nuevo"
+  }, {
+    title: "Mi Catálogo",
+    url: "/seller/catalogo",
+    icon: Store
+  }, {
+    title: "Carrito B2B",
+    url: "/seller/carrito",
+    icon: Package
+  }, {
+    title: "Lista de Deseos",
+    url: "/seller/favoritos",
+    icon: Heart
+  }, {
+    title: "Mi Cuenta",
+    url: "/seller/cuenta",
+    icon: User
+  }];
   const isActive = (url: string) => location.pathname === url;
-
-  return (
-    <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 pt-4 md:pt-28 lg:pt-40">
+  return <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 pt-4 md:pt-28 lg:pt-40">
       <SidebarHeader className="p-4 pb-2">
         <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
           <div className="flex items-center gap-3 overflow-hidden transition-all duration-300 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
@@ -79,12 +59,7 @@ export function SellerSidebar() {
               <span className="text-[10px] uppercase tracking-wider text-blue-600 font-bold">Seller Hub</span>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          >
+          <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted/50">
             <ChevronLeft className={`h-4 w-4 transition-transform duration-200 ${isCollapsed ? "rotate-180" : ""}`} />
           </Button>
         </div>
@@ -94,39 +69,26 @@ export function SellerSidebar() {
 
       <SidebarContent className="px-2">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider px-2 mb-2 group-data-[collapsible=icon]:hidden">
-            Gestión
-          </SidebarGroupLabel>
+          
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {mainNavItems.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.title}>
+              {mainNavItems.map(item => {
+              const active = isActive(item.url);
+              return <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild tooltip={item.title} isActive={active} className={`
                       h-auto py-3 px-3 rounded-xl transition-all duration-200 border mb-2
-                      ${active 
-                        ? "!bg-[#071d7f] !text-white !border-[#071d7f] shadow-md hover:!bg-[#071d7f]/90 hover:!text-white" 
-                        : "bg-white text-[#071d7f] border-[#94111f] hover:bg-gray-50 hover:text-[#071d7f]"
-                      }
+                      ${active ? "!bg-[#071d7f] !text-white !border-[#071d7f] shadow-md hover:!bg-[#071d7f]/90 hover:!text-white" : "bg-white text-[#071d7f] border-[#94111f] hover:bg-gray-50 hover:text-[#071d7f]"}
                     `}>
                       <Link to={item.url} className="flex items-center gap-3 w-full">
                         <item.icon className={`h-5 w-5 flex-shrink-0 transition-colors ${active ? "text-white" : "text-[#071d7f]"}`} />
                         <span className="font-medium flex-1">{item.title}</span>
-                        {item.badge && (
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                            active 
-                              ? "bg-white/20 text-white" 
-                              : "bg-blue-100 text-[#071d7f]"
-                          }`}>
+                        {item.badge && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${active ? "bg-white/20 text-white" : "bg-blue-100 text-[#071d7f]"}`}>
                             {item.badge}
-                          </span>
-                        )}
+                          </span>}
                       </Link>
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+                  </SidebarMenuItem>;
+            })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -156,25 +118,15 @@ export function SellerSidebar() {
             </AvatarFallback>
           </Avatar>
           
-          {!isCollapsed && (
-            <div className="flex flex-col flex-1 min-w-0">
+          {!isCollapsed && <div className="flex flex-col flex-1 min-w-0">
               <span className="text-sm font-semibold truncate text-foreground">{user?.name || "Vendedor"}</span>
               <span className="text-xs text-muted-foreground truncate">{user?.email}</span>
-            </div>
-          )}
+            </div>}
           
-          {!isCollapsed && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={signOut}
-              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg ml-1"
-            >
+          {!isCollapsed && <Button variant="ghost" size="icon" onClick={signOut} className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg ml-1">
               <LogOut className="h-4 w-4" />
-            </Button>
-          )}
+            </Button>}
         </div>
       </SidebarFooter>
-    </Sidebar>
-  );
+    </Sidebar>;
 }
