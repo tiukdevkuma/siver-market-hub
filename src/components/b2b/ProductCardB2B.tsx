@@ -44,6 +44,7 @@ const ProductCardB2B = ({ product, onAddToCart, cartItem, whatsappNumber = "5031
       stock_fisico: product.stock_fisico,
       cantidad,
       subtotal: cantidad * discountedPrice,
+      imagen_principal: product.imagen_principal,
     });
 
     // Reset cantidad a MOQ
