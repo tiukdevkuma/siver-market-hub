@@ -8,6 +8,9 @@ export interface CartItem {
   image: string;
   quantity: number;
   sku: string;
+  storeId?: string;
+  storeName?: string;
+  storeWhatsapp?: string;
 }
 
 interface CartState {
@@ -18,6 +21,7 @@ interface CartState {
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
+  getItemsByStore: () => Map<string, CartItem[]>;
 }
 
 export const useCart = create<CartState>()(
@@ -55,6 +59,15 @@ export const useCart = create<CartState>()(
       clearCart: () => set({ items: [] }),
       totalItems: () => get().items.reduce((sum, item) => sum + item.quantity, 0),
       totalPrice: () => get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      getItemsByStore: () => {
+        const itemsByStore = new Map<string, CartItem[]>();
+        get().items.forEach(item => {
+          const storeKey = item.storeId || 'unknown';
+          const existing = itemsByStore.get(storeKey) || [];
+          itemsByStore.set(storeKey, [...existing, item]);
+        });
+        return itemsByStore;
+      },
     }),
     {
       name: 'siver-cart-storage',
