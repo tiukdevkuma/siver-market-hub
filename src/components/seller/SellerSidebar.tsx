@@ -67,7 +67,7 @@ export function SellerSidebar() {
 
       <SidebarSeparator className="my-2 opacity-50" />
 
-      <SidebarContent className="px-2">
+      <SidebarContent className="px-2 overflow-y-auto">
         <SidebarGroup>
           
           <SidebarGroupContent>
@@ -109,7 +109,7 @@ export function SellerSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 pt-2">
+      <SidebarFooter className="p-3 pt-1 pb-4">
         <div className={`flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/50 transition-all duration-300 ${isCollapsed ? "justify-center p-2 bg-transparent border-0" : ""}`}>
           <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
             <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} />
