@@ -1,14 +1,20 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Trash2, Package, AlertCircle } from "lucide-react";
+import { ShoppingCart, Trash2, Package, AlertCircle, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const CartPage = () => {
-  const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const { items, removeItem, updateQuantity, totalPrice, clearCart, getItemsByStore } = useCart();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isNegotiating, setIsNegotiating] = useState(false);
   const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
@@ -156,11 +162,63 @@ const CartPage = () => {
                 Proceder al Pago
               </Link>
 
-              {/* Botón Continuar comprando */}
+              {/* Botón Negociar por WhatsApp */}
+              {(() => {
+                const itemsByStore = getItemsByStore();
+                const storesWithWhatsapp = Array.from(itemsByStore.entries()).filter(
+                  ([_, storeItems]) => storeItems[0]?.storeWhatsapp
+                );
+                
+                if (storesWithWhatsapp.length === 0) return null;
+                
+                return (
+                  <div className="space-y-2 mt-3">
+                    <p className="text-xs text-gray-500 text-center">¿Quieres negociar el precio?</p>
+                    {storesWithWhatsapp.map(([storeId, storeItems]) => {
+                      const storeName = storeItems[0]?.storeName || 'Vendedor';
+                      const storeWhatsapp = storeItems[0]?.storeWhatsapp;
+                      const storeTotal = storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                      const storeQty = storeItems.reduce((sum, item) => sum + item.quantity, 0);
+                      
+                      const handleNegotiate = () => {
+                        const customerName = user?.name || 'Cliente';
+                        
+                        const itemsList = storeItems
+                          .map((item, idx) => `${idx + 1}. ${item.name} x${item.quantity} - $${(item.price * item.quantity).toFixed(2)}`)
+                          .join('\n');
+                        
+                        const message = `📱 *Consulta de Pedido - ${storeName}*\n\n` +
+                          `Cliente: ${customerName}\n\n` +
+                          `*Detalle del pedido:*\n${itemsList}\n\n` +
+                          `*Total:* $${storeTotal.toFixed(2)}\n` +
+                          `*Unidades:* ${storeQty}\n\n` +
+                          `Me gustaría consultar sobre este pedido. ¿Está disponible?`;
+                        
+                        const whatsappUrl = `https://wa.me/${storeWhatsapp?.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                      };
+                      
+                      return (
+                        <Button
+                          key={storeId}
+                          variant="outline"
+                          onClick={handleNegotiate}
+                          className="w-full border-green-500 text-green-600 hover:bg-green-50 gap-2"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                          Consultar a {storeName}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {/* Botón Vaciar Carrito */}
               <Button
                 variant="outline"
                 onClick={clearCart}
-                className="w-full"
+                className="w-full mt-2"
               >
                 Vaciar Carrito
               </Button>
