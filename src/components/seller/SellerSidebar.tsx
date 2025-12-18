@@ -47,8 +47,8 @@ export function SellerSidebar() {
     icon: User
   }];
   const isActive = (url: string) => location.pathname === url;
-  return <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 pt-4 md:pt-28 lg:pt-40">
-      <SidebarHeader className="p-4 pb-2">
+  return <Sidebar collapsible="icon" className="border-r border-border/50 bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 pt-4 md:pt-16 lg:pt-20 h-screen flex flex-col">
+      <SidebarHeader className="p-4 pb-2 flex-shrink-0">
         <div className="flex items-center justify-between group-data-[collapsible=icon]:justify-center">
           <div className="flex items-center gap-3 overflow-hidden transition-all duration-300 group-data-[collapsible=icon]:w-0 group-data-[collapsible=icon]:opacity-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
@@ -65,9 +65,9 @@ export function SellerSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarSeparator className="my-2 opacity-50" />
+      <SidebarSeparator className="my-2 opacity-50 flex-shrink-0" />
 
-      <SidebarContent className="px-2 overflow-y-auto">
+      <SidebarContent className="px-2 flex-1 overflow-y-auto min-h-0">
         <SidebarGroup>
           
           <SidebarGroupContent>
@@ -109,8 +109,8 @@ export function SellerSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-3 pt-1 pb-4">
-        <div className={`flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/50 transition-all duration-300 ${isCollapsed ? "justify-center p-2 bg-transparent border-0" : ""}`}>
+      <SidebarFooter className="p-2 pt-0 pb-2 flex-shrink-0">
+        <div className={`flex items-center gap-2 p-2 rounded-xl bg-muted/30 border border-border/50 transition-all duration-300 ${isCollapsed ? "justify-center p-2 bg-transparent border-0" : ""}`}>
           <Avatar className="h-9 w-9 border-2 border-background shadow-sm">
             <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`} />
             <AvatarFallback className="bg-blue-100 text-blue-700 font-bold">
