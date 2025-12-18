@@ -22,6 +22,7 @@ export interface CartItemB2B {
   stock_fisico: number;
   cantidad: number; // Cantidad solicitada
   subtotal: number; // precio_b2b * cantidad
+  imagen_principal?: string; // URL de la imagen del producto
 }
 
 export interface CartB2B {

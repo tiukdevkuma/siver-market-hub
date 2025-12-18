@@ -57,8 +57,18 @@ const SellerCartPage = () => {
                     <div className="flex items-center gap-3">
                       {/* Product Image */}
                       <div className="relative w-14 h-14 flex-shrink-0">
-                        <div className="w-full h-full rounded-md bg-muted flex items-center justify-center overflow-hidden">
-                          <Package className="h-6 w-6 text-muted-foreground/50" />
+                        <div className="w-full h-full rounded-md bg-muted overflow-hidden">
+                          {item.imagen_principal ? (
+                            <img 
+                              src={item.imagen_principal} 
+                              alt={item.nombre}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-6 w-6 text-muted-foreground/50" />
+                            </div>
+                          )}
                         </div>
                         <div className="absolute -bottom-1 left-0 right-0 bg-orange-500 text-white text-[8px] py-0.5 text-center rounded-sm">
                           {item.stock_fisico} left
