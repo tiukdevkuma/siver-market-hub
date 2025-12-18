@@ -1,4 +1,4 @@
-﻿import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import { B2BFilters } from '@/types/b2b';
 import { useState } from 'react';
 
@@ -21,13 +21,13 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
     });
   };
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6 shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Filter className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-bold">Buscar y Filtrar</h2>
+          <Filter className="w-4 h-4 text-blue-600" />
+          <h2 className="text-sm font-semibold">Filtros</h2>
           {hasActiveFilters && (
-            <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold">
+            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">
               Activos
             </span>
           )}
@@ -35,22 +35,22 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
         {hasActiveFilters && (
           <button
             onClick={handleClearFilters}
-            className="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition"
+            className="flex items-center gap-1 px-2 py-0.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition"
           >
-            <X className="w-4 h-4" />
-            Limpiar filtros
+            <X className="w-3 h-3" />
+            Limpiar
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         {/* Búsqueda por SKU o Nombre */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Buscar por SKU o Nombre
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            SKU o Nombre
           </label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
               type="text"
               placeholder="Ej: SKU-001"
@@ -58,15 +58,15 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
               onChange={(e) =>
                 onFiltersChange({ ...filters, searchQuery: e.target.value })
               }
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
             />
           </div>
         </div>
 
         {/* Categoría */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Categoría ({categories.length})
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            Categoría
           </label>
           <select
             value={filters.category || ''}
@@ -76,7 +76,7 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
                 category: e.target.value || null,
               })
             }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
           >
             <option value="">Todas</option>
             {categories.map((cat) => (
@@ -89,7 +89,7 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
 
         {/* Estatus de Stock */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-xs font-medium text-gray-600 mb-1">
             Disponibilidad
           </label>
           <select
@@ -100,7 +100,7 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
                 stockStatus: e.target.value as B2BFilters['stockStatus'],
               })
             }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
           >
             <option value="all">Todos</option>
             <option value="in_stock">En Stock</option>
@@ -111,8 +111,8 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
 
         {/* Ordenar Por */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ordenar por
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            Ordenar
           </label>
           <select
             value={filters.sortBy}
@@ -122,31 +122,31 @@ const SearchFilterB2B = ({ filters, onFiltersChange, categories }: SearchFilterB
                 sortBy: e.target.value as B2BFilters['sortBy'],
               })
             }
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition"
           >
             <option value="newest">Más Nuevo</option>
-            <option value="price_asc">Precio  (Menor a Mayor)</option>
-            <option value="price_desc">Precio  (Mayor a Menor)</option>
-            <option value="moq_asc">MOQ  (Menor cantidad)</option>
-            <option value="moq_desc">MOQ  (Mayor cantidad)</option>
+            <option value="price_asc">Precio ↑</option>
+            <option value="price_desc">Precio ↓</option>
+            <option value="moq_asc">MOQ ↑</option>
+            <option value="moq_desc">MOQ ↓</option>
           </select>
         </div>
       </div>
       
-      {/* Botón Filtros Avanzados (Placeholder for future expansion) */}
-      <div className="mt-4 flex justify-end">
+      {/* Botón Filtros Avanzados */}
+      <div className="mt-2 flex justify-end">
          <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+            className="text-xs text-gray-500 hover:text-blue-600 flex items-center gap-1"
          >
-            {showAdvanced ? 'Menos opciones' : 'Más opciones'}
+            {showAdvanced ? 'Menos' : 'Más opciones'}
             <Filter className="w-3 h-3" />
          </button>
       </div>
       
       {showAdvanced && (
-        <div className="mt-4 pt-4 border-t border-gray-100 text-center text-sm text-gray-500">
-            No hay filtros adicionales disponibles por el momento.
+        <div className="mt-2 pt-2 border-t border-gray-100 text-center text-xs text-gray-500">
+            No hay filtros adicionales disponibles.
         </div>
       )}
     </div>
