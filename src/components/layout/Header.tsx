@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingBag, Search, Heart, User, Mail, Camera, Loader2, TrendingUp, Flame } from "lucide-react";
+import { Menu, X, ShoppingBag, Search, Heart, User, Mail, Camera, Loader2, TrendingUp, Flame, Mic, MicOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { usePublicCategories } from "@/hooks/useCategories";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,14 +8,62 @@ import { UserRole } from "@/types/auth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { searchProductsByImage } from "@/services/api/imageSearch";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+// Web Speech API types
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: Event & { error: string }) => void) | null;
+  onend: (() => void) | null;
+  onstart: (() => void) | null;
+}
+
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
+}
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openMobileCategory, setOpenMobileCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isImageSearching, setIsImageSearching] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
   const isMobile = useIsMobile();
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const { data: categories = [], isLoading: categoriesLoading } = usePublicCategories();
   const navigate = useNavigate();
@@ -25,6 +73,21 @@ const Header = () => {
   const [hasOverflow, setHasOverflow] = useState(false);
   const headerRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(0);
+
+  // Check for Web Speech API support
+  useEffect(() => {
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setVoiceSupported(!!SpeechRecognitionAPI);
+  }, []);
+
+  // Cleanup speech recognition on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const el = catBarRef.current;
@@ -88,6 +151,76 @@ const Header = () => {
     }
   };
 
+  const startVoiceSearch = () => {
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognitionAPI) {
+      toast.error("Búsqueda por voz no soportada en este navegador");
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'es-ES';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.info("Escuchando...", { duration: 2000 });
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let finalTranscript = '';
+      let interimTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript;
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      if (interimTranscript) {
+        setSearchQuery(interimTranscript);
+      }
+
+      if (finalTranscript) {
+        setSearchQuery(finalTranscript);
+        toast.success(`Buscando: "${finalTranscript}"`);
+        navigate(`/productos?q=${encodeURIComponent(finalTranscript.trim())}`);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+      
+      if (event.error === 'no-speech') {
+        toast.error("No se detectó ninguna voz. Intenta de nuevo.");
+      } else if (event.error === 'audio-capture') {
+        toast.error("No se pudo acceder al micrófono.");
+      } else if (event.error === 'not-allowed') {
+        toast.error("Permiso de micrófono denegado.");
+      } else {
+        toast.error("Error al reconocer voz. Intenta de nuevo.");
+      }
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  };
+
   if (isMobile) {
     return (
       <>
@@ -123,6 +256,25 @@ const Header = () => {
                   <Camera className="w-5 h-5" strokeWidth={1.5} />
                 )}
               </button>
+              {/* Voice search button - Mobile */}
+              {voiceSupported && (
+                <button 
+                  type="button" 
+                  onClick={startVoiceSearch}
+                  className={cn(
+                    "p-1 transition-colors",
+                    isListening 
+                      ? "text-red-500 animate-pulse" 
+                      : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  {isListening ? (
+                    <MicOff className="w-5 h-5" strokeWidth={1.5} />
+                  ) : (
+                    <Mic className="w-5 h-5" strokeWidth={1.5} />
+                  )}
+                </button>
+              )}
               <button className="bg-gray-900 hover:bg-gray-800 p-2 rounded-full m-0.5 transition-colors">
                 <Search className="w-4 h-4 text-white" strokeWidth={2} />
               </button>
@@ -226,6 +378,25 @@ const Header = () => {
                     <Camera className="w-5 h-5" />
                   )}
                 </button>
+                {/* Voice search button - Desktop */}
+                {voiceSupported && (
+                  <button
+                    type="button"
+                    onClick={startVoiceSearch}
+                    className={cn(
+                      "transition-colors",
+                      isListening 
+                        ? "text-red-500 animate-pulse" 
+                        : "text-gray-400 hover:text-red-500"
+                    )}
+                  >
+                    {isListening ? (
+                      <MicOff className="w-5 h-5" />
+                    ) : (
+                      <Mic className="w-5 h-5" />
+                    )}
+                  </button>
+                )}
                 <Search className="w-5 h-5 text-gray-400" />
               </div>
             </div>
